@@ -1,1 +1,755 @@
 flamengo pai do palmeiras e do vasco 
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowthMetrics - Painel de Marketing Digital</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f6ff',
+                            100: '#e0edff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for modern sleek aesthetic */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col min-h-screen">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <i class="fa-solid font-bold fa-chart-line text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">GrowthMetrics</span>
+                        <span class="hidden sm:inline-block text-xs text-slate-400 ml-2 border-l border-slate-700 pl-2">Marketing Analytics 360°</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Status das APIs: <span class="font-semibold text-slate-200">Meta & Google On</span>
+                    </div>
+
+                    <button onclick="exportReport()" class="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm font-medium transition duration-200 text-slate-200">
+                        <i class="fa-solid fa-download text-blue-400"></i>
+                        <span class="hidden sm:inline">Exportar Relatório</span>
+                    </button>
+
+                    <button onclick="openModal()" class="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium shadow-md shadow-blue-600/30 transition duration-200">
+                        <i class="fa-solid fa-plus"></i>
+                        <span class="hidden sm:inline">Nova Campanha</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Filter Controls Bar -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold mr-1">Filtro de Canal:</span>
+                <button onclick="filterChannel('all')" id="btn-chan-all" class="channel-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition">Todos</button>
+                <button onclick="filterChannel('meta')" id="btn-chan-meta" class="channel-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Meta Ads</button>
+                <button onclick="filterChannel('google')" id="btn-chan-google" class="channel-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Google Ads</button>
+                <button onclick="filterChannel('email')" id="btn-chan-email" class="channel-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">E-mail Marketing</button>
+                <button onclick="filterChannel('organic')" id="btn-chan-organic" class="channel-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Orgânico/SEO</button>
+            </div>
+
+            <div class="flex items-center gap-3 self-end lg:self-auto">
+                <i class="fa-regular fa-calendar text-slate-400 text-sm"></i>
+                <select id="period-select" onchange="updateDashboardData()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs sm:text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 p-2 outline-none cursor-pointer">
+                    <option value="7d">Últimos 7 Dias</option>
+                    <option value="30d" selected>Últimos 30 Dias</option>
+                    <option value="90d">Últimos 90 Dias</option>
+                    <option value="year">Ano Atual (2026)</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Top Metrics Cards Grid -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- KPI 1: Investimento Total -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition duration-200 relative overflow-hidden group">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Investimento Total</p>
+                        <h3 id="kpi-investment" class="text-2xl font-bold text-slate-100 mt-2">R$ 48.500</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-wallet text-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-xs">
+                    <span id="kpi-investment-trend" class="text-emerald-400 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-up"></i> +12.4%
+                    </span>
+                    <span class="text-slate-500 ml-2">vs. período anterior</span>
+                </div>
+            </div>
+
+            <!-- KPI 2: Receita / ROAS -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition duration-200 relative overflow-hidden group">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Receita Gerada (ROAS)</p>
+                        <h3 id="kpi-revenue" class="text-2xl font-bold text-slate-100 mt-2">R$ 218.250</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                        <i class="fa-solid fa-sack-dollar text-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center justify-between text-xs">
+                    <span id="kpi-roas-badge" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">ROAS 4.5x</span>
+                    <span id="kpi-revenue-trend" class="text-emerald-400 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-up"></i> +18.2%
+                    </span>
+                </div>
+            </div>
+
+            <!-- KPI 3: CAC (Custo de Aquisição) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition duration-200 relative overflow-hidden group">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">CAC Médio</p>
+                        <h3 id="kpi-cac" class="text-2xl font-bold text-slate-100 mt-2">R$ 38,40</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                        <i class="fa-solid fa-user-check text-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-xs">
+                    <span id="kpi-cac-trend" class="text-emerald-400 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-down"></i> -5.1% (melhor)
+                    </span>
+                    <span class="text-slate-500 ml-2">vs. período anterior</span>
+                </div>
+            </div>
+
+            <!-- KPI 4: Taxa de Conversão & Conversões -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition duration-200 relative overflow-hidden group">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Conversões (Vendas)</p>
+                        <h3 id="kpi-conversions" class="text-2xl font-bold text-slate-100 mt-2">1.263</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                        <i class="fa-solid fa-cart-shopping text-lg"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center justify-between text-xs">
+                    <span id="kpi-conversion-rate" class="text-slate-300 font-medium">Taxa Conv: <strong class="text-purple-400">3.4%</strong></span>
+                    <span id="kpi-conversions-trend" class="text-emerald-400 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-up"></i> +8.7%
+                    </span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Main Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Evolution Line Chart (2 Cols on Large) -->
+            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h4 class="text-base font-bold text-slate-100">Evolução do Investimento x Retorno</h4>
+                        <p class="text-xs text-slate-400">Acompanhamento diário de custos e receita bruta</p>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="flex items-center gap-1 text-slate-300"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span> Investimento</span>
+                        <span class="flex items-center gap-1 text-slate-300"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span> Receita</span>
+                    </div>
+                </div>
+                <div class="h-72 w-full relative">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Traffic Sources Donut Chart -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                <div>
+                    <h4 class="text-base font-bold text-slate-100">Origem do Tráfego</h4>
+                    <p class="text-xs text-slate-400 mb-4">Distribuição de sessões por canal</p>
+                </div>
+                <div class="h-60 relative flex items-center justify-center">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+                <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-800/80 text-xs text-slate-400 mt-2">
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Google Ads (38%)</div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Meta Ads (32%)</div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Orgânico/SEO (18%)</div>
+                    <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> E-mail (12%)</div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Secondary Grid: Funnel & Performance by Channel -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Conversion Funnel -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                <h4 class="text-base font-bold text-slate-100 mb-1">Funil de Conversão</h4>
+                <p class="text-xs text-slate-400 mb-5">Jornada do usuário no período selecionado</p>
+
+                <div class="space-y-4">
+                    <!-- Funnel Stage 1 -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-300 font-medium"><i class="fa-solid fa-eye text-blue-400 mr-1.5"></i> Impressões</span>
+                            <span id="fn-impressions" class="font-bold text-slate-200">485.000</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                            <div class="bg-blue-500 h-3 rounded-full transition-all duration-500" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Funnel Stage 2 -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-300 font-medium"><i class="fa-solid fa-mouse-pointer text-indigo-400 mr-1.5"></i> Cliques (CTR 3.1%)</span>
+                            <span id="fn-clicks" class="font-bold text-slate-200">15.035</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                            <div class="bg-indigo-500 h-3 rounded-full transition-all duration-500" style="width: 65%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Funnel Stage 3 -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-300 font-medium"><i class="fa-solid fa-user-plus text-purple-400 mr-1.5"></i> Leads Capturados</span>
+                            <span id="fn-leads" class="font-bold text-slate-200">3.750</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                            <div class="bg-purple-500 h-3 rounded-full transition-all duration-500" style="width: 40%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Funnel Stage 4 -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-300 font-medium"><i class="fa-solid fa-bag-shopping text-emerald-400 mr-1.5"></i> Clientes Adquiridos</span>
+                            <span id="fn-sales" class="font-bold text-emerald-400">1.263</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+                            <div class="bg-emerald-500 h-3 rounded-full transition-all duration-500" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-3 bg-slate-800/50 rounded-xl border border-slate-700/50 text-xs text-slate-400 flex items-center justify-between">
+                    <span>Taxa Global de Conversão:</span>
+                    <span class="text-emerald-400 font-bold text-sm">8.4% (Lead-to-Sale)</span>
+                </div>
+            </div>
+
+            <!-- ROAS Comparative Bar Chart (2 cols) -->
+            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h4 class="text-base font-bold text-slate-100">Eficiência de Mídia (ROAS por Canal)</h4>
+                            <p class="text-xs text-slate-400">Comparativo de retorno financeiro multiplicador</p>
+                        </div>
+                        <span class="text-xs bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-md text-slate-300">Target ROAS: &gt; 3.0x</span>
+                    </div>
+                    <div class="h-64 relative">
+                        <canvas id="channelRoasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Detailed Campaigns Data Table -->
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h4 class="text-base font-bold text-slate-100">Campanhas Ativas</h4>
+                    <p class="text-xs text-slate-400">Acompanhamento granular de performance por anúncio</p>
+                </div>
+                
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="text" id="table-search" onkeyup="filterCampaignTable()" placeholder="Buscar campanha..." class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-xl pl-9 pr-3 py-2 outline-none focus:border-blue-500 transition">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Responsive Scrollable Table -->
+            <div class="overflow-x-auto rounded-xl border border-slate-800">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-800/80 uppercase font-semibold text-slate-400 tracking-wider">
+                        <tr>
+                            <th class="p-3.5">Campanha</th>
+                            <th class="p-3.5">Plataforma</th>
+                            <th class="p-3.5">Investido</th>
+                            <th class="p-3.5">Cliques</th>
+                            <th class="p-3.5">CTR</th>
+                            <th class="p-3.5">Vendas</th>
+                            <th class="p-3.5">ROAS</th>
+                            <th class="p-3.5">Status</th>
+                            <th class="p-3.5 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="campaign-table-body" class="divide-y divide-slate-800/60 font-medium">
+                        <!-- Dynamic Rows injected via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- New Campaign Modal -->
+    <div id="campaignModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl relative transform scale-95 transition-transform duration-300">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-100">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-100 mb-1">Criar Nova Campanha</h3>
+            <p class="text-xs text-slate-400 mb-4">Adicione dados simulados para atualizar o dashboard.</p>
+
+            <form onsubmit="handleNewCampaign(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nome da Campanha</label>
+                    <input type="text" id="modal-name" required placeholder="Ex: Black Friday - Remarketing" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 outline-none focus:border-blue-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Plataforma</label>
+                        <select id="modal-platform" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 outline-none focus:border-blue-500">
+                            <option value="Google Ads">Google Ads</option>
+                            <option value="Meta Ads">Meta Ads</option>
+                            <option value="E-mail">E-mail Marketing</option>
+                            <option value="TikTok Ads">TikTok Ads</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Orçamento (R$)</label>
+                        <input type="number" id="modal-budget" required placeholder="5000" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-200 outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium text-slate-300">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-medium shadow-md shadow-blue-600/30">Lançar Campanha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 border border-slate-700 text-slate-200 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-message" class="text-xs font-medium">Operação realizada com sucesso!</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>&copy; 2026 GrowthMetrics Analytics - Demonstração Interativa</span>
+            <span class="flex items-center gap-1"><i class="fa-solid fa-bolt text-amber-400"></i> Atualizado em tempo real</span>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        
+        // Initial Mock Database
+        let campaignsData = [
+            { id: 1, name: "Google - Fundo de Funil [Pesquisa]", platform: "Google Ads", channel: "google", spent: 14500, clicks: 4820, ctr: "4.2%", sales: 412, roas: 5.2, status: "Ativa" },
+            { id: 2, name: "Meta - Feed Instagram [Lookalike 1%]", platform: "Meta Ads", channel: "meta", spent: 12200, clicks: 5100, ctr: "2.8%", sales: 320, roas: 4.1, status: "Ativa" },
+            { id: 3, name: "Meta - Stories [Remarketing 7D]", platform: "Meta Ads", channel: "meta", spent: 6800, clicks: 2300, ctr: "3.9%", sales: 215, roas: 6.4, status: "Ativa" },
+            { id: 4, name: "Google - Performance Max [E-commerce]", platform: "Google Ads", channel: "google", spent: 9400, clicks: 2100, ctr: "1.9%", sales: 180, roas: 3.8, status: "Ativa" },
+            { id: 5, name: "Email - Nutrição de Leads [Automação]", platform: "E-mail", channel: "email", spent: 1500, clicks: 1215, ctr: "12.4%", sales: 98, roas: 8.5, status: "Ativa" },
+            { id: 6, name: "SEO / Busca Orgânica [Blog]", platform: "Orgânico", channel: "organic", spent: 4100, clicks: 3500, ctr: "8.1%", sales: 38, roas: 2.1, status: "Ativa" }
+        ];
+
+        let currentChannelFilter = 'all';
+
+        // Chart References
+        let evolutionChartInstance = null;
+        let trafficChartInstance = null;
+        let channelRoasChartInstance = null;
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            renderCampaignTable();
+            updateDashboardData();
+        });
+
+        function initCharts() {
+            // Chart 1: Evolution Line Chart
+            const ctx1 = document.getElementById('evolutionChart').getContext('2d');
+            const gradientRevenue = ctx1.createLinearGradient(0, 0, 0, 200);
+            gradientRevenue.addColorStop(0, 'rgba(52, 211, 153, 0.3)');
+            gradientRevenue.addColorStop(1, 'rgba(52, 211, 153, 0.0)');
+
+            const gradientCost = ctx1.createLinearGradient(0, 0, 0, 200);
+            gradientCost.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+            gradientCost.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+            evolutionChartInstance = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                    datasets: [
+                        {
+                            label: 'Receita (R$)',
+                            data: [35000, 52000, 61000, 70250],
+                            borderColor: '#34d399',
+                            backgroundColor: gradientRevenue,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#34d399',
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Investimento (R$)',
+                            data: [9000, 11500, 13000, 15000],
+                            borderColor: '#3b82f6',
+                            backgroundColor: gradientCost,
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#3b82f6',
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+
+            // Chart 2: Traffic Donut
+            const ctx2 = document.getElementById('trafficChart').getContext('2d');
+            trafficChartInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Google Ads', 'Meta Ads', 'Orgânico', 'E-mail'],
+                    datasets: [{
+                        data: [38, 32, 18, 12],
+                        backgroundColor: ['#3b82f6', '#6366f1', '#10b981', '#f59e0b'],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Chart 3: Channel ROAS Bar Chart
+            const ctx3 = document.getElementById('channelRoasChart').getContext('2d');
+            channelRoasChartInstance = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: ['Google Ads', 'Meta Ads', 'E-mail', 'Orgânico/SEO'],
+                    datasets: [{
+                        label: 'ROAS Médio (x)',
+                        data: [4.8, 4.5, 8.5, 2.1],
+                        backgroundColor: ['#3b82f6', '#6366f1', '#f59e0b', '#10b981'],
+                        borderRadius: 8,
+                        barThickness: 28
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                        y: { 
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+                            ticks: { color: '#94a3b8' },
+                            suggestedMax: 10
+                        }
+                    }
+                }
+            });
+        }
+
+
+        function filterChannel(channel) {
+            currentChannelFilter = channel;
+            
+            // Highlight active button
+            document.querySelectorAll('.channel-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+
+            const activeBtn = document.getElementById(`btn-chan-${channel}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+                activeBtn.classList.add('bg-blue-600', 'text-white');
+            }
+
+            renderCampaignTable();
+            updateDashboardData();
+            showToast(`Filtro aplicado: ${channel.toUpperCase()}`);
+        }
+
+        function updateDashboardData() {
+            const period = document.getElementById('period-select').value;
+            let multiplier = 1.0;
+
+            if (period === '7d') multiplier = 0.25;
+            if (period === '90d') multiplier = 2.8;
+            if (period === 'year') multiplier = 10.5;
+
+            // Calculate metrics based on current filtered campaigns
+            const filtered = currentChannelFilter === 'all' 
+                ? campaignsData 
+                : campaignsData.filter(c => c.channel === currentChannelFilter);
+
+            const totalSpent = filtered.reduce((acc, c) => acc + c.spent, 0) * multiplier;
+            const totalSales = Math.round(filtered.reduce((acc, c) => acc + c.sales, 0) * multiplier);
+            const totalClicks = Math.round(filtered.reduce((acc, c) => acc + c.clicks, 0) * multiplier);
+            
+            // Calculate weighted ROAS
+            const avgRoas = filtered.length > 0 
+                ? (filtered.reduce((acc, c) => acc + c.roas, 0) / filtered.length).toFixed(1)
+                : "0.0";
+
+            const revenue = totalSpent * parseFloat(avgRoas);
+            const cac = totalSales > 0 ? (totalSpent / totalSales).toFixed(2) : "0.00";
+
+            // Update DOM Elements
+            document.getElementById('kpi-investment').innerText = `R$ ${totalSpent.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            document.getElementById('kpi-revenue').innerText = `R$ ${revenue.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`;
+            document.getElementById('kpi-roas-badge').innerText = `ROAS ${avgRoas}x`;
+            document.getElementById('kpi-cac').innerText = `R$ ${parseFloat(cac).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('kpi-conversions').innerText = totalSales.toLocaleString('pt-BR');
+
+            // Update Funnel Stats
+            document.getElementById('fn-impressions').innerText = (totalClicks * 32).toLocaleString('pt-BR');
+            document.getElementById('fn-clicks').innerText = totalClicks.toLocaleString('pt-BR');
+            document.getElementById('fn-leads').innerText = Math.round(totalClicks * 0.25).toLocaleString('pt-BR');
+            document.getElementById('fn-sales').innerText = totalSales.toLocaleString('pt-BR');
+
+            // Update Chart datasets dynamically
+            if (evolutionChartInstance) {
+                const factor = multiplier * (filtered.length / campaignsData.length || 1);
+                evolutionChartInstance.data.datasets[0].data = [
+                    Math.round(25000 * factor), 
+                    Math.round(45000 * factor), 
+                    Math.round(58000 * factor), 
+                    Math.round(revenue / 3)
+                ];
+                evolutionChartInstance.data.datasets[1].data = [
+                    Math.round(7000 * factor), 
+                    Math.round(10000 * factor), 
+                    Math.round(12000 * factor), 
+                    Math.round(totalSpent / 3)
+                ];
+                evolutionChartInstance.update();
+            }
+        }
+
+        function renderCampaignTable() {
+            const tbody = document.getElementById('campaign-table-body');
+            tbody.innerHTML = '';
+
+            const filtered = currentChannelFilter === 'all'
+                ? campaignsData
+                : campaignsData.filter(c => c.channel === currentChannelFilter);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-500">Nenhuma campanha encontrada para este filtro.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/40 transition border-b border-slate-800/40";
+                
+                let badgeColor = "bg-blue-500/10 text-blue-400";
+                if(item.platform.includes("Meta")) badgeColor = "bg-indigo-500/10 text-indigo-400";
+                if(item.platform.includes("Email")) badgeColor = "bg-amber-500/10 text-amber-400";
+                if(item.platform.includes("Orgânico")) badgeColor = "bg-emerald-500/10 text-emerald-400";
+
+                tr.innerHTML = `
+                    <td class="p-3.5 font-semibold text-slate-100 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full ${item.status === 'Ativa' ? 'bg-emerald-400' : 'bg-amber-400'}"></span>
+                        ${item.name}
+                    </td>
+                    <td class="p-3.5"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold ${badgeColor}">${item.platform}</span></td>
+                    <td class="p-3.5 text-slate-200">R$ ${item.spent.toLocaleString('pt-BR')}</td>
+                    <td class="p-3.5">${item.clicks.toLocaleString('pt-BR')}</td>
+                    <td class="p-3.5 text-slate-400">${item.ctr}</td>
+                    <td class="p-3.5 font-bold text-slate-100">${item.sales}</td>
+                    <td class="p-3.5"><span class="font-bold text-emerald-400">${item.roas}x</span></td>
+                    <td class="p-3.5"><span class="text-[11px] text-slate-300 bg-slate-800 px-2 py-0.5 rounded">${item.status}</span></td>
+                    <td class="p-3.5 text-right">
+                        <button onclick="toggleCampaignStatus(${item.id})" class="text-slate-400 hover:text-blue-400 p-1" title="Alternar Status">
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterCampaignTable() {
+            const query = document.getElementById('table-search').value.toLowerCase();
+            const rows = document.querySelectorAll('#campaign-table-body tr');
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+
+        function toggleCampaignStatus(id) {
+            const campaign = campaignsData.find(c => c.id === id);
+            if (campaign) {
+                campaign.status = campaign.status === 'Ativa' ? 'Pausada' : 'Ativa';
+                renderCampaignTable();
+                showToast(`Campanha "${campaign.name}" marcada como ${campaign.status}`);
+            }
+        }
+
+        function openModal() {
+            const modal = document.getElementById('campaignModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.children[0].classList.remove('scale-95');
+                modal.children[0].classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('campaignModal');
+            modal.children[0].classList.remove('scale-100');
+            modal.children[0].classList.add('scale-95');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function handleNewCampaign(event) {
+            event.preventDefault();
+            const name = document.getElementById('modal-name').value;
+            const platform = document.getElementById('modal-platform').value;
+            const budget = parseFloat(document.getElementById('modal-budget').value) || 1000;
+
+            let channel = "google";
+            if (platform.includes("Meta")) channel = "meta";
+            if (platform.includes("E-mail")) channel = "email";
+
+            const newCamp = {
+                id: Date.now(),
+                name: name,
+                platform: platform,
+                channel: channel,
+                spent: budget,
+                clicks: Math.round(budget * 0.4),
+                ctr: "3.5%",
+                sales: Math.round(budget * 0.025),
+                roas: 4.2,
+                status: "Ativa"
+            };
+
+            campaignsData.unshift(newCamp);
+            renderCampaignTable();
+            updateDashboardData();
+            closeModal();
+            showToast("Nova campanha criada com sucesso!");
+
+            // Reset form
+            document.getElementById('modal-name').value = '';
+            document.getElementById('modal-budget').value = '';
+        }
+
+        function exportReport() {
+            showToast("Gerando relatório PDF/CSV...");
+            setTimeout(() => {
+                showToast("Relatório baixado com sucesso!");
+            }, 1500);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
